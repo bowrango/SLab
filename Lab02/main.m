@@ -7,11 +7,11 @@ pot_sensitivity = 0.015 / 0.01745; % V/deg. -> V/rad.
 
 Dataset13 = readmatrix('WaveformData_1.3_redo.csv');
 t1 = linspace(0, 0.00001408* 100000, 100000);
-e_tach1 = Dataset13(6:end, 1);
-e_pot1 = Dataset13(6:end, 2);
+V_tach1 = Dataset13(6:end, 1);
+V_pot1 = Dataset13(6:end, 2);
 
-omega1 = e_tach1 / tach_sensitivity; % rad./s
-theta1 = e_pot1 / pot_sensitivity; % rad.
+omega1 = V_tach1 / tach_sensitivity; % rad./s
+theta1 = V_pot1 / pot_sensitivity; % rad.
 
 %1a
 figure(1)
@@ -63,7 +63,9 @@ xlim([0 0.75]);
 % This is given in the module 12 velocity sensors video (~29mins)
 
 %2b
-% k = E(A/L) -> solve for E, and resolve for k
+wire_length = 118.07 * (0.00328); % mm -> ft
+wire_dia = 6.81 * (0.00328); % mm -> ft
+k_exp = (0.253) * ( (5/12)/wire_length );
 
 %2c
 % I confirmed that using the theta and omega responses produce very similar
@@ -79,17 +81,30 @@ omega_natural1 = find_undamped_natural_frequency(t1, peak_idx1, zeta1);
 % plot(t1(peak_idx1), peak_mag1, 'o')
 
 %2d 
-% The differential equation can be used to solve for J and B when in
-% standard form
+J_sys_exp = k_exp / omega_natural1^2; % lbf-ft-s^2
+B_sys_exp = 2*zeta1*k_exp / omega_natural1; 
+
 
 % 2.e
-J_pot = 2.44*10^-3 / 16; % ozf-in-sec^2 -> lbf-in.-sec^2
-J_tach = 1.32*10^-4 / 16; % ozf-in-sec^2 > lbf-in.-sec^2
-J_gear = (0.5 * 0.268 * (2.5/2)^2) / (32.174*12); % lbm-in.^2 -> lbf-in.-sec^2
-J_coup_pt = (0.5 *  0.0249 * (0.744/2)^2) / (32.174*12); % lbm-in.^2 -> lbf-in.-sec^2
-J_coup_ps = (0.5 *  0.0253  * (0.75/2)^2) / (32.174*12); % lbm-in.^2 -> lbf-in.-sec^2
+J_pot = 2.44*10^-3 / (16*12); % ozf-in-sec^2 -> lbf-ft-s^2
+J_tach = 1.32*10^-4 / (16*12); % ozf-in-sec^2 > lbf-ft-s^2
+J_gear = 0.5 * (0.268/32.174) * (2.5/2)^2 * (1/12) * (1/12); % lbf-ft-s^2
+J_coup_pt = 0.5 * (0.0249/32.174) * (0.744/2)^2 * (1/12) * (1/12); % lbf-ft-s^2
+J_coup_ps = 0.5 * (0.0253/32.174) * (0.75/2)^2 * (1/12) * (1/12); % lbf-ft-s^2
 
-% Not sure how to find theoretical k?
+shaft_length = 114.8 * (0.00328); % mm -> ft: 
+shaft_dia = 11.44 * (0.00328); % mm -> ft: 
+shaft_volume = shaft_length * pi*(shaft_dia/2)^2; % ft^3
+shaft_mass = shaft_volume * (501.297); % lbm
+J_shaft = 0.5 * (shaft_mass/32.174) * (shaft_dia/2)^2; % lbf-ft-s^2
+
+J_sys_theo = J_pot + J_tach + J_gear + J_coup_pt + J_coup_ps + J_shaft; % lbf-ft-s^2
+
+J_wire = (pi/32)*(wire_dia)^4; % ft^4
+G_wire = wire_length*k_exp/J_wire;
+k_theo = J_wire*G_wire / wire_length;
+
+
 
 
 
