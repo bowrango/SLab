@@ -65,7 +65,7 @@ xlim([0 0.75]);
 %2b
 wire_length = 118.07 * (0.00328); % mm -> ft
 wire_dia = 6.81 * (0.00328); % mm -> ft
-k_exp = (0.253) * ( (5/12)/wire_length );
+k_exp = (0.253) * ( (5/12)/wire_length ); % lbf-ft/rad.
 
 %2c
 % I confirmed that using the theta and omega responses produce very similar
@@ -86,25 +86,26 @@ B_sys_exp = 2*zeta1*k_exp / omega_natural1;
 
 
 % 2.e
+% Mass moments of inertia: J = 0.5mr^2
 J_pot = 2.44*10^-3 / (16*12); % ozf-in-sec^2 -> lbf-ft-s^2
-J_tach = 1.32*10^-4 / (16*12); % ozf-in-sec^2 > lbf-ft-s^2
+J_tach = 1.32*10^-4 / (16*12); % ozf-in-sec^2 -> lbf-ft-s^2
 J_gear = 0.5 * (0.268/32.174) * (2.5/2)^2 * (1/12) * (1/12); % lbf-ft-s^2
 J_coup_pt = 0.5 * (0.0249/32.174) * (0.744/2)^2 * (1/12) * (1/12); % lbf-ft-s^2
 J_coup_ps = 0.5 * (0.0253/32.174) * (0.75/2)^2 * (1/12) * (1/12); % lbf-ft-s^2
 
-shaft_length = 114.8 * (0.00328); % mm -> ft: 
-shaft_dia = 11.44 * (0.00328); % mm -> ft: 
+shaft_length = 114.8 * (0.00328); % mm -> ft
+shaft_dia = 11.44 * (0.00328); % mm -> ft
 shaft_volume = shaft_length * pi*(shaft_dia/2)^2; % ft^3
-shaft_mass = shaft_volume * (501.297); % lbm
+shaft_mass = shaft_volume * (471); % lbm
 J_shaft = 0.5 * (shaft_mass/32.174) * (shaft_dia/2)^2; % lbf-ft-s^2
 
 J_sys_theo = J_pot + J_tach + J_gear + J_coup_pt + J_coup_ps + J_shaft; % lbf-ft-s^2
 
-J_wire = (pi/32)*(wire_dia)^4; % ft^4
-G_wire = wire_length*k_exp/J_wire;
-k_theo = J_wire*G_wire / wire_length;
 
-
+% Area moment of inertia 
+I_wire = (pi/2) * (wire_dia/2)^4; % ft^4
+G_wire = 16.562*10^8; % lbf/ft^2
+k_theo = G_wire*I_wire/wire_length;
 
 
 
