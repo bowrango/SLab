@@ -105,10 +105,46 @@ J_wire = (pi/32)*(wire_dia)^4; % ft^4
 G_wire = wire_length*k_exp/J_wire;
 k_theo = J_wire*G_wire / wire_length;
 
+%% 3 Integration of Velocity and Signal Drift
 
+%A Ideal Transfer Function
+R1 = 10000; %Ohms
+C1 = 10 * (10^-6); %Farads
 
+num = 1;
+den = [-1/(C1*R1) 0];
 
+Tf = tf(num,den);
 
+bode(Tf)
+
+%Ideal OP Amp has the 2 other terms that give rise to a drift. Integrating
+%the error and integrating the input current
+% Module 6 Part 2 end of the video
+
+%B Angular Displacements
+
+Datasetiii = readmatrix('WaveformData(iii).csv');
+
+E_int = Datasetiii(6:end, 1);
+E_pot = Datasetiii(6:end, 2); 
+E_time = Datasetiii(6:end, 3);
+
+theta_int = E_int / tach_sensitivity; % rad./s
+gain = 1/(R1*C1);
+theta_int = theta_int / gain; %rad
+
+theta_pot = E_pot / pot_sensitivity; %rad
+
+figure(4)
+plot(E_time, theta_int, 'r')
+hold on
+plot(E_time, theta_pot, 'b')
+hold on
+legend('Theta Integrator', 'Theta Potentiometer')
+ylabel('Theta [rad]')
+xlabel('Time');
+title('Integrator Angle vs Potentiometer Theta')
 
 %% Functions
 function zeta = find_damping_ratios(peaks, final_value)
