@@ -119,8 +119,6 @@ den = [-1/(C1*R1) 0];
 
 Tf = tf(num,den);
 
-bode(Tf)
-
 %Ideal OP Amp has the 2 other terms that give rise to a drift. Integrating
 %the error and integrating the input current
 % Module 6 Part 2 end of the video
@@ -129,10 +127,15 @@ bode(Tf)
 
 Datasetiii = readmatrix('WaveformData(iii).csv');
 
+%Importing data
 E_int = Datasetiii(6:end, 1);
 E_pot = Datasetiii(6:end, 2); 
 E_time = Datasetiii(6:end, 3);
 
+%Scaling E_pot to start at 0 radians
+E_pot = E_pot - E_pot(10);
+
+%Converting from V to rad
 theta_int = E_int / tach_sensitivity; % rad./s
 gain = 1/(R1*C1);
 theta_int = theta_int / gain; %rad
@@ -140,14 +143,101 @@ theta_int = theta_int / gain; %rad
 theta_pot = E_pot / pot_sensitivity; %rad
 
 figure(4)
-plot(E_time, theta_int, 'r')
+yyaxis left
+plot(E_time, theta_int)
+ylabel('\theta (rad.)')
+yyaxis right
+plot(E_time, theta_pot)
+ylabel('\theta (rad.)')
+xlabel('Time (s)')
+ylim([-.04 0.65]);
 hold on
-plot(E_time, theta_pot, 'b')
+title('Integration of Velocity and Signal Drift')
+
+%% 4 Integration of Velocity w/o Signal Drift
+
+Rf = 1*10^6;
+Ri = 10*10^3;
+C = 10*10^-6;
+
+num2 = (Rf);
+den2 = [Ri*Rf*C Ri];
+
+freq = [0.15,1.5,15];
+ppin = [0.8217,0.8259,0.7975];
+ppout = [7.607,.8492,.09469];
+delT = [-1.522,-.163,-.0668];
+per = [6.667,.6678,.0668];
+ar = [0,0,0];
+phs = [0,0,0];
+
+for i=1:3
+    ar(i) = 20*log10(ppout(i)/ppin(i));
+    phs(i) = ((360*delT(i))/per(i));
+end
+
+w = linspace(0.15, 15, 55);
+
+Tf2 = tf(num2, den2);
+figure(5)
+[magnitude,phase] = bode(Tf2,w);
+
+%Resolving weird data format
+for i=1:55
+    magnitude_new(i) = magnitude(1,1,i);
+end
+
+magnitude_new = transpose(magnitude_new);
+
+for i=1:55
+    phase_new(i) = phase(1,1,i);
+end
+
+phase_new = transpose(phase_new);
+
+subplot(2,1,1)
+semilogx(w,magnitude_new)
 hold on
-legend('Theta Integrator', 'Theta Potentiometer')
-ylabel('Theta [rad]')
-xlabel('Time');
-title('Integrator Angle vs Potentiometer Theta')
+semilogx(freq,ar,'d',freq,ar); 
+hold on;
+subplot(2,1,2)
+semilogx(w,phase_new)
+hold on
+semilogx(freq,phs,'d',freq,phs); 
+hold on;
+
+Dataset43 = readmatrix('Waveform Data 4.3.csv');
+
+%Importing data
+E_int2 = Dataset43(6:end, 1);
+E_pot2 = Dataset43(6:end, 2); 
+E_time2 = Dataset43(6:end, 3);
+
+%Scaling E_pot to start at 0 radians
+%E_pot2 = E_pot2 - E_pot2(10);
+
+%Converting from V to rad
+theta_int2 = E_int2 / tach_sensitivity; % rad./s
+gain2 = Rf/Ri;
+theta_int2 = theta_int2 / gain2; %rad
+
+theta_pot2 = E_pot2 / pot_sensitivity; %rad
+
+figure(6)
+yyaxis left
+plot(E_time2, theta_int2)
+ylabel('\theta (rad.)')
+yyaxis right
+plot(E_time2, theta_pot2)
+ylabel('\theta (rad.)')
+xlabel('Time (s)')
+ylim([0.73 1.53]);
+hold on
+title('Integration of Velocity w/o Signal Drift')
+
+%Tau is the moment it crosses -45
+%Gain is slope?
+
 
 %% Functions
 function zeta = find_damping_ratios(peaks, final_value)
