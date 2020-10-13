@@ -163,17 +163,17 @@ den2 = [Ri*Rf*C Ri];
 freq = [0.15,1.5,15];
 ppin = [0.8217,0.8259,0.7975];
 ppout = [7.607,.8492,.09469];
-delT = [-1.522,-.163,-.0668];
+delT = [1.522,-.163,-.0168];
 per = [6.667,.6678,.0668];
 ar = [0,0,0];
 phs = [0,0,0];
 
 for i=1:3
     ar(i) = 20*log10(ppout(i)/ppin(i));
-    phs(i) = ((360*delT(i))/per(i));
+    phs(i) = ((360*delT(i))/(per(i)));
 end
 
-w = linspace(0.15, 15, 55);
+w = linspace(0.01, 100, 55);
 
 Tf2 = tf(num2, den2);
 figure(5)
@@ -192,16 +192,21 @@ end
 
 phase_new = transpose(phase_new);
 
+figure(5)
 subplot(2,1,1)
 semilogx(w,magnitude_new)
 hold on
 semilogx(freq,ar,'d',freq,ar); 
 hold on;
+title('Bode Diagram')
+ylabel('Magnitude (dB)')
 subplot(2,1,2)
 semilogx(w,phase_new)
 hold on
 semilogx(freq,phs,'d',freq,phs); 
 hold on;
+ylabel('Phase (deg)')
+xlabel('Frequency (rad/s)')
 
 Dataset43 = readmatrix('Waveform Data 4.3.csv');
 
