@@ -142,10 +142,10 @@ theta_pot = E_pot / pot_sensitivity; %rad
 figure(4)
 yyaxis left
 plot(E_time, theta_int)
-ylabel('\theta (rad.)')
+ylabel('\theta_i_n_t (rad.)')
 yyaxis right
 plot(E_time, theta_pot)
-ylabel('\theta (rad.)')
+ylabel('\theta_p_o_t (rad.)')
 xlabel('Time (s)')
 ylim([-.04 0.65]);
 hold on
@@ -157,12 +157,11 @@ Rf = 1*10^6;
 Ri = 10*10^3;
 C = 10*10^-6;
 
-num2 = (Rf);
-den2 = [Ri*Rf*C Ri];
 
-freq = [0.15,1.5,15];
-ppin = [0.8217,0.8259,0.7975];
-ppout = [7.607,.8492,.09469];
+freqar = [ 0.15, 1.5, 15];
+freq = [0.15, 1.5, 15];
+ppin = [ 0.8217, 0.8259, 0.7975];
+ppout = [ 7.607, .8492, .09469];
 delT = [1.522,-.163,-.0168];
 per = [6.667,.6678,.0668];
 ar = [0,0,0];
@@ -174,6 +173,8 @@ for i=1:3
 end
 
 w = linspace(0.01, 100, 55);
+num2 = (Rf);
+den2 = [Ri*Rf*C Ri];
 
 Tf2 = tf(num2, den2);
 figure(5)
@@ -192,14 +193,17 @@ end
 
 phase_new = transpose(phase_new);
 
+four = [-45 -45 -45];
+
 figure(5)
 subplot(2,1,1)
 semilogx(w,magnitude_new)
 hold on
-semilogx(freq,ar,'d',freq,ar); 
+semilogx(freqar,ar,'d',freqar,ar); 
 hold on;
 title('Bode Diagram')
 ylabel('Magnitude (dB)')
+legend('Theoretical', 'Experimental')
 subplot(2,1,2)
 semilogx(w,phase_new)
 hold on
@@ -207,6 +211,7 @@ semilogx(freq,phs,'d',freq,phs);
 hold on;
 ylabel('Phase (deg)')
 xlabel('Frequency (rad/s)')
+legend('Theoretical', 'Experimental')
 
 Dataset43 = readmatrix('Waveform Data 4.3.csv');
 
@@ -228,17 +233,14 @@ theta_pot2 = E_pot2 / pot_sensitivity; %rad
 figure(6)
 yyaxis left
 plot(E_time2, theta_int2)
-ylabel('\theta (rad.)')
+ylabel('\theta_i_n_t (rad.)')
 yyaxis right
 plot(E_time2, theta_pot2)
-ylabel('\theta (rad.)')
+ylabel('\theta_p_o_t (rad.)')
 xlabel('Time (s)')
 ylim([0.73 1.53]);
 hold on
 title('Integration of Velocity w/o Signal Drift')
-
-%Tau is the moment it crosses -45
-%Gain is slope?
 
 
 %% Functions
