@@ -65,7 +65,7 @@ xlim([0 0.75]);
 
 %2b
 wire_length = 118.07 * (0.00328); % mm -> ft
-wire_dia = 6.81 * (0.00328); % mm -> ft
+wire_dia = 1.59 * (0.00328); % mm -> ft
 k_exp = (0.253) * ( (5/12)/wire_length ); % lbf-ft/rad.
 
 %2c
@@ -103,9 +103,10 @@ J_shaft = 0.5 * (shaft_mass/32.174) * (shaft_dia/2)^2; % lbf-ft-s^2
 J_sys_theo = J_pot + J_tach + J_gear + J_coup_pt + J_coup_ps + J_shaft; % lbf-ft-s^2
 
 % Area moment of inertia 
-I_wire = (pi/2) * (wire_dia/2)^4; % ft^4
-G_wire = 16.562*10^8; % lbf/ft^2
-k_theo = G_wire*I_wire/wire_length;
+I_wire = (pi/32) * (wire_dia)^4; % ft^4
+G_wire = 16.562e+08; % lbf/ft^2
+k_theo = I_wire*G_wire / wire_length;
+
 
 
 %% 3 Integration of Velocity and Signal Drift
