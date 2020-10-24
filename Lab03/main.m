@@ -36,7 +36,7 @@ zeta1 = mean(find_damping_ratios(peak_mag1, 0));
 [omega_undamped1, omega_damped1] = find_undamped_natural_frequency(t1, peak_idx1+42722, zeta1);
 
 % plot to confirm the peaks look good 
-figure(4)
+figure(3)
 plot(t1, e0_lvt); hold on
 plot(t1(peak_idx1+42722), peak_mag1, 'o')
 
@@ -57,7 +57,7 @@ e2_1_lvt_null = readmatrix('Waveform2.1.3_Null.csv')';
 e2_1_lvt_below = readmatrix('Waveform2.1.3_Below_Null.csv')';
 t2_1 = linspace(0.33687612, 0.00000015*6668, 6668);
 
-figure(5)
+figure(4)
 subplot(3,1,1)
 title('Voltage Output vs Coil Displacement before Amplitude Demodulation')
 hold on
@@ -92,7 +92,7 @@ e2_2_lvt_null = e2_2_lvt_null(:,(1:6453));
 e2_2_lvt_below = readmatrix('Waveform2.1.5_Below_Null.csv')';
 t2_2 = linspace(0.0283703208033347, 0.00000031*6453, 6453);
 
-figure(6)
+figure(5)
 subplot(3,1,1)
 title('Voltage Output vs Coil Displacement after Amplitude Demodulation')
 hold on
@@ -120,6 +120,29 @@ ylabel('Below Null [volts]')
 legend('Coil 1','Coil 2')
 xlabel('Time [s]')
 grid on
+
+%% 2.2 LVDT System Calibration and Dynamics
+
+weight = [100 200 300 400 500] / 1000; %Kg
+v_weight = [-130.714 -263.856 -391.563 -523.374 -657.848] / 1000; %V
+
+disp = [0.05 0.1 0.15 0.2 0.25]; %in
+v_disp = [-130.313 -278.8 -426.208 -574.973 -719.663] / 1000; %V
+
+figure(6)
+plot(weight, v_weight)
+grid on
+title('Weight vs Output Voltage')
+ylabel('Output Voltage [volts]')
+xlabel('Weight [Kg]')
+
+figure(7)
+plot(disp, v_disp)
+grid on
+title('Displacement vs Output Voltage')
+ylabel('Output Voltage [volts]')
+xlabel('Displacement [in]')
+
 
 
 %% Functions 
