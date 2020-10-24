@@ -143,8 +143,6 @@ title('Displacement vs Output Voltage')
 ylabel('Output Voltage [volts]')
 xlabel('Displacement [in]')
 
-
-
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
     % Calculates the damping ratio between each peak using the log decrement method 
