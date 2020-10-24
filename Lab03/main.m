@@ -50,10 +50,6 @@ B = 2 * zeta1 * omega_undamped1 * mass * (1 / 32.174) * (1 / 12); % [lbf-s/in.]
 v_impact = 53.7; % [in./s] -
 F_impact = B*v_impact; % [lbf]
 
-
-%% 2.3 
-
-
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
     % Calculates the damping ratio between each peak using the log decrement method 
