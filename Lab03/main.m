@@ -123,25 +123,53 @@ grid on
 
 %% 2.2 LVDT System Calibration and Dynamics
 
-weight = [100 200 300 400 500] / 1000; %Kg
+%A
+weight = ([100 200 300 400 500] + 7.5) / 1000; %Kg
 v_weight = [-130.714 -263.856 -391.563 -523.374 -657.848] / 1000; %V
 
 disp = [0.05 0.1 0.15 0.2 0.25]; %in
 v_disp = [-130.313 -278.8 -426.208 -574.973 -719.663] / 1000; %V
 
 figure(6)
-plot(weight, v_weight)
+plot(weight, v_weight,'-o')
 grid on
 title('Weight vs Output Voltage')
 ylabel('Output Voltage [volts]')
 xlabel('Weight [Kg]')
 
 figure(7)
-plot(disp, v_disp)
+plot(disp, v_disp,'-o')
 grid on
 title('Displacement vs Output Voltage')
 ylabel('Output Voltage [volts]')
 xlabel('Displacement [in]')
+
+%B
+slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/kg
+slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
+
+slope_w = slope_w * (1/2.2046226218488); %v/lbf
+
+k = slope_d/slope_w; %kg/in
+
+%C
+LVDTsens = slope_d; %V/in
+
+%D 
+e2_4_lvt = readmatrix('Waveform2.2.4.csv')';
+t2_4 = linspace(-3.369857989, 0.00008458*53206, 53206);
+
+[peak_idx2, peak_mag2] = peakfinder(e2_4_lvt, 0.08, 0.0025);
+zeta2 = mean(find_damping_ratios(peak_mag2, -.0075));
+[omega_undamped2, omega_damped2] = find_undamped_natural_frequency(t2_4, peak_idx2, zeta2);
+
+figure(8)
+plot(t2_4, e2_4_lvt)
+hold on
+plot(t2_4(peak_idx2), peak_mag2,'o')
+hold on
+
+eff_m = k/(omega_undamped2^2); %should be lbm, but idk the units of w_undamped
 
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
@@ -165,5 +193,3 @@ function [omega_undamped, omega_damped] = find_undamped_natural_frequency(time, 
     
     omega_undamped = omega_damped / sqrt(1 - zeta^2);
 end
-
-
