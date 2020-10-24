@@ -50,7 +50,76 @@ B = 2 * zeta1 * omega_undamped1 * mass * (1 / 32.174) * (1 / 12); % [lbf-s/in.]
 v_impact = 53.7; % [in./s] -
 F_impact = B*v_impact; % [lbf]
 
+%% 2.1 LDVT Characteristics
 
+e2_1_lvt_above = readmatrix('Waveform2.1.3_Above_Null.csv')';
+e2_1_lvt_null = readmatrix('Waveform2.1.3_Null.csv')';
+e2_1_lvt_below = readmatrix('Waveform2.1.3_Below_Null.csv')';
+t2_1 = linspace(0.33687612, 0.00000015*6668, 6668);
+
+figure(5)
+subplot(3,1,1)
+title('Voltage Output vs Coil Displacement before Amplitude Demodulation')
+hold on
+plot(t2_1, e2_1_lvt_above(1,:),'r')
+hold on
+plot(t2_1, e2_1_lvt_above(2,:),'-or','MarkerIndices',1:300:length(t2_1))
+hold on
+ylabel('Above Null [volts]')
+legend('Coil 1','Coil 2')
+grid on
+subplot(3,1,2)
+plot(t2_1, e2_1_lvt_null(1,:),'b')
+hold on
+plot(t2_1, e2_1_lvt_null(2,:),'-ob','MarkerIndices',1:300:length(t2_1))
+hold on
+ylabel('At Null [volts]')
+legend('Coil 1','Coil 2')
+grid on
+subplot(3,1,3)
+plot(t2_1, e2_1_lvt_below(1,:),'k')
+hold on
+plot(t2_1, e2_1_lvt_below(2,:),'-ok','MarkerIndices',1:300:length(t2_1))
+hold on
+ylabel('Below Null [volts]')
+legend('Coil 1','Coil 2')
+xlabel('Time [s]')
+grid on
+
+e2_2_lvt_above = readmatrix('Waveform2.1.5_Above_Null.csv')';
+e2_2_lvt_null = readmatrix('Waveform2.1.5_Null.csv')';
+e2_2_lvt_null = e2_2_lvt_null(:,(1:6453));
+e2_2_lvt_below = readmatrix('Waveform2.1.5_Below_Null.csv')';
+t2_2 = linspace(0.0283703208033347, 0.00000031*6453, 6453);
+
+figure(6)
+subplot(3,1,1)
+title('Voltage Output vs Coil Displacement after Amplitude Demodulation')
+hold on
+plot(t2_2, e2_2_lvt_above(1,:),'r')
+hold on
+plot(t2_2, e2_2_lvt_above(2,:),'-or','MarkerIndices',1:300:length(t2_2))
+hold on
+ylabel('Above Null [volts]')
+legend('Coil 1','Coil 2')
+grid on
+subplot(3,1,2)
+plot(t2_2, e2_2_lvt_null(1,:),'b')
+hold on
+plot(t2_2, e2_2_lvt_null(2,:),'-ob','MarkerIndices',1:300:length(t2_2))
+hold on
+ylabel('At Null [volts]')
+legend('Coil 1','Coil 2')
+grid on
+subplot(3,1,3)
+plot(t2_2, e2_2_lvt_below(1,:),'k')
+hold on
+plot(t2_2, e2_2_lvt_below(2,:),'-ok','MarkerIndices',1:300:length(t2_2))
+hold on
+ylabel('Below Null [volts]')
+legend('Coil 1','Coil 2')
+xlabel('Time [s]')
+grid on
 
 
 %% Functions 
