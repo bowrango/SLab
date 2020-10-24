@@ -51,6 +51,7 @@ v_impact = 53.7; % [in./s] -
 F_impact = B*v_impact; % [lbf]
 
 
+%% 2.3 
 
 
 %% Functions 
