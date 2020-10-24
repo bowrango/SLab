@@ -144,7 +144,6 @@ title('Displacement vs Output Voltage')
 ylabel('Output Voltage [volts]')
 xlabel('Displacement [in]')
 
-<<<<<<< HEAD
 %B
 slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/kg
 slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
@@ -172,8 +171,6 @@ hold on
 
 eff_m = k/(omega_undamped2^2); %should be lbm, but idk the units of w_undamped
 
-=======
->>>>>>> 1da69901f6e7e4c667c94f635da476ecac276fee
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
     % Calculates the damping ratio between each peak using the log decrement method 
@@ -196,5 +193,3 @@ function [omega_undamped, omega_damped] = find_undamped_natural_frequency(time, 
     
     omega_undamped = omega_damped / sqrt(1 - zeta^2);
 end
-
-
