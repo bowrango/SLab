@@ -150,7 +150,7 @@ slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
 
 slope_w = slope_w * (1/2.2046226218488); %v/lbf
 
-k = slope_d/slope_w; %kg/in
+k = slope_d/slope_w; %lbf/in
 
 %C
 LVDTsens = slope_d; %V/in
@@ -169,13 +169,13 @@ hold on
 plot(t2_4(peak_idx2), peak_mag2,'o')
 hold on
 
-eff_m = k/(omega_undamped2^2); %should be lbm, but idk the units of w_undamped
+eff_m = (k * 32.174 * 12) / (omega_undamped2^2); % [lbm]
 
 %% 2.3 LVDT Frequency Response
 
 RawData239_phase = readmatrix('Waveform2.3.9_Phase.xlsx', 'Sheet', 1);
 bode_freq = RawData239_phase(:, 1);
-bode_phase = RawData239_phase(:, 1);
+bode_phase = RawData239_phase(:, 2);
 
 RawData239_mag = readmatrix('Waveform2.3.9_Phase.xlsx', 'Sheet', 2);
 bode_mag = RawData239_mag(:, 2);
@@ -207,13 +207,13 @@ lvdt_den = [(2*Lp*L0) (2*Rp*L0 + 2*Lp*Rs + Rm*Lp) (2*Rp*Rs + Rp*Rm)];
 tf_lvdt = tf(lvdt_num, lvdt_den);
 
 % compare experimental to theoretical 
-% handle = figure;
-% bode(tf_lvdt); hold on; grid on
-% children = get(handle, 'Children');
-% axes(children(3)) % Magnitude Plot
-% semilogx(bode_freq, bode_mag, 'color', 'r'); 
-% axes(children(2))  % Phase Plot
-% semilogx(bode_freq, bode_phase, 'color', 'r')
+handle = figure;
+bode(tf_lvdt); hold on; grid on
+children = get(handle, 'Children');
+axes(children(3)) % Magnitude Plot
+semilogx(bode_freq, bode_mag, 'color', 'r'); 
+axes(children(2))  % Phase Plot
+semilogx(bode_freq, bode_phase, 'color', 'r')
 
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
