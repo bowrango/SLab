@@ -38,7 +38,7 @@ zeta1 = mean(find_damping_ratios(peak_mag1, 0));
 % plot to confirm the peaks look good 
 figure(3)
 plot(t1, e0_lvt); hold on
-plot(t1(peak_idx1+42722), peak_mag1, 'o')
+plot(t1(peak_idx1+42722), peak_mag1, 'o'); grid on
 
 % foam spring constant found from standard form of second order tf
 k_foam = omega_undamped1^2 * mass * (1 / 32.174) * (1 / 12); % [lbf/in.]
@@ -124,7 +124,7 @@ grid on
 %% 2.2 LVDT System Calibration and Dynamics
 
 %A
-weight = ([100 200 300 400 500] + 7.5) / 1000; %Kg
+weight = (([100 200 300 400 500] + 7.5) / 1000)  * (2.2046226218488); %lbf
 v_weight = [-130.714 -263.856 -391.563 -523.374 -657.848] / 1000; %V
 
 disp = [0.05 0.1 0.15 0.2 0.25]; %in
@@ -135,7 +135,7 @@ plot(weight, v_weight,'-o')
 grid on
 title('Weight vs Output Voltage')
 ylabel('Output Voltage [volts]')
-xlabel('Weight [Kg]')
+xlabel('Weight [lbf]')
 
 figure(7)
 plot(disp, v_disp,'-o')
@@ -145,7 +145,7 @@ ylabel('Output Voltage [volts]')
 xlabel('Displacement [in]')
 
 %B
-slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/kg
+slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/lbf
 slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
 
 slope_w = slope_w * (1/2.2046226218488); %v/lbf
@@ -161,15 +161,17 @@ t2_4 = linspace(-3.369857989, 0.00008458*53206, 53206);
 
 [peak_idx2, peak_mag2] = peakfinder(e2_4_lvt, 0.08, 0.0025);
 zeta2 = mean(find_damping_ratios(peak_mag2, -.0075));
-[omega_undamped2, omega_damped2] = find_undamped_natural_frequency(t2_4, peak_idx2, zeta2);
+[omega_undamped2, omega_damped2] = find_undamped_natural_frequency(t2_4, peak_idx2, zeta2); %Hz
 
-figure(8)
-plot(t2_4, e2_4_lvt)
-hold on
-plot(t2_4(peak_idx2), peak_mag2,'o')
-hold on
+k = k * (32.17405*12);              %lbf/in to lbm/sec^2
 
-eff_m = (k * 32.174 * 12) / (omega_undamped2^2); % [lbm]
+% figure(8)
+% plot(t2_4, e2_4_lvt)
+% hold on
+% plot(t2_4(peak_idx2), peak_mag2,'o')
+% hold on
+
+eff_m = k / (omega_undamped2^2); % [lbm]
 
 %% 2.3 LVDT Frequency Response
 
@@ -193,17 +195,20 @@ Rs = 162; % [ohm]
 x = 0.1; % [in.]
 
 % the break frequencies are w1 = Rp / Lp, and w2 = (2Rs + Rm) / (2L0)
-Lp = Rp / omega_break1;
-L0 = (2*Rs + Rm) / (2*omega_break2);
+Lp = Rp / omega_break1; % [H]
+L0 = (2*Rs + Rm) / (2*omega_break2); % [H]
 
-% flat portion of bode plot is the gain/sensitivity. Ks = (2RmKmx) / Rp(2Rs + Rm)
-Ks = -23.84; % [dB]
+% flat portion of bode plot is the gain/sensitivity.
+% amplitude ratio in this region is Ks = 2KmRmx / Lp(2Rp + Rm)
+Ks = -23.84; % dB
+Ks = 10^(Ks/20); % unitless  
 
-% not 100% sure about these units 
-Km = Ks*Rp*(2*Rs + Rm) / (2*Rm*x); % [H/in.]
+Km = Ks*Lp*(2*Rp + Rm) / (2*Rm*x);
 
-lvdt_num = [2*Km*x*Rm 0];
-lvdt_den = [(2*Lp*L0) (2*Rp*L0 + 2*Lp*Rs + Rm*Lp) (2*Rp*Rs + Rp*Rm)];
+% rearranged terms from the transfer function
+lvdt_num = [(2*Rm*Km*x)/(Rp*(2*Rs+Rm)) 0];
+lvdt_den = [(Lp/Rp)*((2*L0)/(2*Rs+Rm)) ((Lp/Rp)+((2*L0)/(2*Rs+Rm))) 1];
+
 tf_lvdt = tf(lvdt_num, lvdt_den);
 
 % compare experimental to theoretical 
