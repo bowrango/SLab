@@ -171,6 +171,50 @@ hold on
 
 eff_m = k/(omega_undamped2^2); %should be lbm, but idk the units of w_undamped
 
+%% 2.3 LVDT Frequency Response
+
+RawData239_phase = readmatrix('Waveform2.3.9_Phase.xlsx', 'Sheet', 1);
+bode_freq = RawData239_phase(:, 1);
+bode_phase = RawData239_phase(:, 1);
+
+RawData239_mag = readmatrix('Waveform2.3.9_Phase.xlsx', 'Sheet', 2);
+bode_mag = RawData239_mag(:, 2);
+
+% approximated break frequencies from bode plot
+omega_break1 = 265; % [Hz]
+omega_break2 = 44170; % [Hz]
+
+% usable bandwidth is the space between the two break frequencies 
+
+% values from E-500 LVDT data sheet
+Rm = 1e6; % [ohm]
+Rp = 408; % [ohm] 
+Rs = 162; % [ohm]
+x = 0.1; % [in.]
+
+% the break frequencies are w1 = Rp / Lp, and w2 = (2Rs + Rm) / (2L0)
+Lp = Rp / omega_break1;
+L0 = (2*Rs + Rm) / (2*omega_break2);
+
+% flat portion of bode plot is the gain/sensitivity. Ks = (2RmKmx) / Rp(2Rs + Rm)
+Ks = -23.84; % [dB]
+
+% not 100% sure about these units 
+Km = Ks*Rp*(2*Rs + Rm) / (2*Rm*x); % [H/in.]
+
+lvdt_num = [2*Km*x*Rm 0];
+lvdt_den = [(2*Lp*L0) (2*Rp*L0 + 2*Lp*Rs + Rm*Lp) (2*Rp*Rs + Rp*Rm)];
+tf_lvdt = tf(lvdt_num, lvdt_den);
+
+% compare experimental to theoretical 
+% handle = figure;
+% bode(tf_lvdt); hold on; grid on
+% children = get(handle, 'Children');
+% axes(children(3)) % Magnitude Plot
+% semilogx(bode_freq, bode_mag, 'color', 'r'); 
+% axes(children(2))  % Phase Plot
+% semilogx(bode_freq, bode_phase, 'color', 'r')
+
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
     % Calculates the damping ratio between each peak using the log decrement method 
