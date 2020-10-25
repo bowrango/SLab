@@ -38,7 +38,7 @@ zeta1 = mean(find_damping_ratios(peak_mag1, 0));
 % plot to confirm the peaks look good 
 figure(3)
 plot(t1, e0_lvt); hold on
-plot(t1(peak_idx1+42722), peak_mag1, 'o')
+plot(t1(peak_idx1+42722), peak_mag1, 'o'); grid on
 
 % foam spring constant found from standard form of second order tf
 k_foam = omega_undamped1^2 * mass * (1 / 32.174) * (1 / 12); % [lbf/in.]
@@ -124,7 +124,7 @@ grid on
 %% 2.2 LVDT System Calibration and Dynamics
 
 %A
-weight = ([100 200 300 400 500] + 7.5) / 1000; %Kg
+weight = (([100 200 300 400 500] + 7.5) / 1000)  * (2.2046226218488); %lbf
 v_weight = [-130.714 -263.856 -391.563 -523.374 -657.848] / 1000; %V
 
 disp = [0.05 0.1 0.15 0.2 0.25]; %in
@@ -135,7 +135,7 @@ plot(weight, v_weight,'-o')
 grid on
 title('Weight vs Output Voltage')
 ylabel('Output Voltage [volts]')
-xlabel('Weight [Kg]')
+xlabel('Weight [lbf]')
 
 figure(7)
 plot(disp, v_disp,'-o')
@@ -145,12 +145,10 @@ ylabel('Output Voltage [volts]')
 xlabel('Displacement [in]')
 
 %B
-slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/kg
+slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/lbf
 slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
 
-slope_w = slope_w * (1/2.2046226218488); %v/lbf
-
-k = slope_d/slope_w; %kg/in
+k = slope_d/slope_w; %lbf/in
 
 %C
 LVDTsens = slope_d; %V/in
@@ -161,15 +159,35 @@ t2_4 = linspace(-3.369857989, 0.00008458*53206, 53206);
 
 [peak_idx2, peak_mag2] = peakfinder(e2_4_lvt, 0.08, 0.0025);
 zeta2 = mean(find_damping_ratios(peak_mag2, -.0075));
-[omega_undamped2, omega_damped2] = find_undamped_natural_frequency(t2_4, peak_idx2, zeta2);
+[omega_undamped2, omega_damped2] = find_undamped_natural_frequency(t2_4, peak_idx2, zeta2); %Hz
 
+k = k * (32.17405*12);              %lbf/in to lbm/sec^2
+
+% figure(8)
+% plot(t2_4, e2_4_lvt)
+% hold on
+% plot(t2_4(peak_idx2), peak_mag2,'o')
+% hold on
+
+eff_m = k/(omega_undamped2^2); %lbm = (lbm/s^2)/(1/s^2)
+
+%E - low pass filter bode plot
+tau = (100*10^3)*(0.047*10^-6);
+
+w_break = (1 / tau); % * 0.159154943091895; %Hz
+
+num_filter = k;
+den_filter = [tau 1];
+tf_filter = tf(num_filter, den_filter);
 figure(8)
-plot(t2_4, e2_4_lvt)
-hold on
-plot(t2_4(peak_idx2), peak_mag2,'o')
-hold on
+bode(tf_filter);
+title('Bode Diagram for Low Pass Filter')
+annotation('textbox', [0.6, 0.2, 0.1, 0.1], 'String', "Breakpoint Freq = " + w_break + " rad/s")
 
-eff_m = k/(omega_undamped2^2); %should be lbm, but idk the units of w_undamped
+%No affect on the given spring mass damper system because the low pass
+%filter's breakpoint freq is higher than the systems frequency, if the
+%systems frequency was higher, the low pass filter would filter out that
+%signal, hence why its called a LOW PASS filter
 
 %% 2.3 LVDT Frequency Response
 
