@@ -59,7 +59,7 @@ t2_1 = linspace(0.33687612, 0.00000015*6668, 6668);
 
 figure(4)
 subplot(3,1,1)
-title('Voltage Output vs Coil Displacement before Amplitude Demodulation')
+title('Voltage Output vs Core Displacement before Amplitude Demodulation')
 hold on
 plot(t2_1, e2_1_lvt_above(1,:),'r')
 hold on
@@ -94,14 +94,14 @@ t2_2 = linspace(0.0283703208033347, 0.00000031*6453, 6453);
 
 figure(5)
 subplot(3,1,1)
-title('Voltage Output vs Coil Displacement after Amplitude Demodulation')
+title('Voltage Output vs Core Displacement after Amplitude Demodulation')
 hold on
 plot(t2_2, e2_2_lvt_above(1,:),'r')
 hold on
 plot(t2_2, e2_2_lvt_above(2,:),'-or','MarkerIndices',1:300:length(t2_2))
 hold on
 ylabel('Above Null [volts]')
-legend('Coil 1','Coil 2')
+legend('Low Pass Filter Output','Demodulator Output')
 grid on
 subplot(3,1,2)
 plot(t2_2, e2_2_lvt_null(1,:),'b')
@@ -109,7 +109,7 @@ hold on
 plot(t2_2, e2_2_lvt_null(2,:),'-ob','MarkerIndices',1:300:length(t2_2))
 hold on
 ylabel('At Null [volts]')
-legend('Coil 1','Coil 2')
+legend('Low Pass Filter Output','Demodulator Output')
 grid on
 subplot(3,1,3)
 plot(t2_2, e2_2_lvt_below(1,:),'k')
@@ -117,7 +117,7 @@ hold on
 plot(t2_2, e2_2_lvt_below(2,:),'-ok','MarkerIndices',1:300:length(t2_2))
 hold on
 ylabel('Below Null [volts]')
-legend('Coil 1','Coil 2')
+legend('Low Pass Filter Output','Demodulator Output')
 xlabel('Time [s]')
 grid on
 
@@ -150,7 +150,7 @@ slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
 
 slope_w = slope_w * (1/2.2046226218488); %v/lbf
 
-k = slope_d/slope_w; %lbf/in
+k_units = slope_d/slope_w; %lbf/in
 
 %C
 LVDTsens = slope_d; %V/in
@@ -163,7 +163,7 @@ t2_4 = linspace(-3.369857989, 0.00008458*53206, 53206);
 zeta2 = mean(find_damping_ratios(peak_mag2, -.0075));
 [omega_undamped2, omega_damped2] = find_undamped_natural_frequency(t2_4, peak_idx2, zeta2); %Hz
 
-k = k * (32.17405*12);              %lbf/in to lbm/sec^2
+k = k_units * (32.17405*12);              %lbf/in to lbm/sec^2
 
 % figure(8)
 % plot(t2_4, e2_4_lvt)
@@ -171,7 +171,25 @@ k = k * (32.17405*12);              %lbf/in to lbm/sec^2
 % plot(t2_4(peak_idx2), peak_mag2,'o')
 % hold on
 
-eff_m = k / (omega_undamped2^2); % [lbm]
+eff_m = k/(omega_undamped2^2); %lbm = (lbm/s^2)/(1/s^2)
+
+ %E - low pass filter bode plot
+ tau = (100*10^3)*(0.047*10^-6);
+
+ w_break = (1 / tau); % * 0.159154943091895; %Hz
+
+ num_filter = 1/k;
+ den_filter = [tau 1];
+ tf_filter = tf(num_filter, den_filter);
+ figure(8)
+ bode(tf_filter);
+ title('Bode Diagram for Low Pass Filter')
+ annotation('textbox', [0.6, 0.2, 0.1, 0.1], 'String', "Breakpoint Freq = " + w_break + " rad/s")
+
+ %No affect on the given spring mass damper system because the low pass
+ %filter's breakpoint freq is higher than the systems frequency, if the
+ %systems frequency was higher, the low pass filter would filter out that
+ %signal, hence why its called a LOW PASS filter
 
 %% 2.3 LVDT Frequency Response
 
