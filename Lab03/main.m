@@ -148,6 +148,8 @@ xlabel('Displacement [in]')
 slope_w = (v_weight(1) - v_weight(end)) / (weight(1) - weight(end)); %v/lbf
 slope_d = (v_disp(1) - v_disp(end)) / (disp(1) - disp(end)); %v/in
 
+slope_w = slope_w * (1/2.2046226218488); %v/lbf
+
 k = slope_d/slope_w; %lbf/in
 
 %C
@@ -169,31 +171,13 @@ k = k * (32.17405*12);              %lbf/in to lbm/sec^2
 % plot(t2_4(peak_idx2), peak_mag2,'o')
 % hold on
 
-eff_m = k/(omega_undamped2^2); %lbm = (lbm/s^2)/(1/s^2)
-
-%E - low pass filter bode plot
-tau = (100*10^3)*(0.047*10^-6);
-
-w_break = (1 / tau); % * 0.159154943091895; %Hz
-
-num_filter = k;
-den_filter = [tau 1];
-tf_filter = tf(num_filter, den_filter);
-figure(8)
-bode(tf_filter);
-title('Bode Diagram for Low Pass Filter')
-annotation('textbox', [0.6, 0.2, 0.1, 0.1], 'String', "Breakpoint Freq = " + w_break + " rad/s")
-
-%No affect on the given spring mass damper system because the low pass
-%filter's breakpoint freq is higher than the systems frequency, if the
-%systems frequency was higher, the low pass filter would filter out that
-%signal, hence why its called a LOW PASS filter
+eff_m = k / (omega_undamped2^2); % [lbm]
 
 %% 2.3 LVDT Frequency Response
 
 RawData239_phase = readmatrix('Waveform2.3.9_Phase.xlsx', 'Sheet', 1);
 bode_freq = RawData239_phase(:, 1);
-bode_phase = RawData239_phase(:, 1);
+bode_phase = RawData239_phase(:, 2);
 
 RawData239_mag = readmatrix('Waveform2.3.9_Phase.xlsx', 'Sheet', 2);
 bode_mag = RawData239_mag(:, 2);
@@ -211,27 +195,30 @@ Rs = 162; % [ohm]
 x = 0.1; % [in.]
 
 % the break frequencies are w1 = Rp / Lp, and w2 = (2Rs + Rm) / (2L0)
-Lp = Rp / omega_break1;
-L0 = (2*Rs + Rm) / (2*omega_break2);
+Lp = Rp / omega_break1; % [H]
+L0 = (2*Rs + Rm) / (2*omega_break2); % [H]
 
-% flat portion of bode plot is the gain/sensitivity. Ks = (2RmKmx) / Rp(2Rs + Rm)
-Ks = -23.84; % [dB]
+% flat portion of bode plot is the gain/sensitivity.
+% amplitude ratio in this region is Ks = 2KmRmx / Lp(2Rp + Rm)
+Ks = -23.84; % dB
+Ks = 10^(Ks/20); % unitless  
 
-% not 100% sure about these units 
-Km = Ks*Rp*(2*Rs + Rm) / (2*Rm*x); % [H/in.]
+Km = Ks*Lp*(2*Rp + Rm) / (2*Rm*x);
 
-lvdt_num = [2*Km*x*Rm 0];
-lvdt_den = [(2*Lp*L0) (2*Rp*L0 + 2*Lp*Rs + Rm*Lp) (2*Rp*Rs + Rp*Rm)];
+% rearranged terms from the transfer function
+lvdt_num = [(2*Rm*Km*x)/(Rp*(2*Rs+Rm)) 0];
+lvdt_den = [(Lp/Rp)*((2*L0)/(2*Rs+Rm)) ((Lp/Rp)+((2*L0)/(2*Rs+Rm))) 1];
+
 tf_lvdt = tf(lvdt_num, lvdt_den);
 
 % compare experimental to theoretical 
-% handle = figure;
-% bode(tf_lvdt); hold on; grid on
-% children = get(handle, 'Children');
-% axes(children(3)) % Magnitude Plot
-% semilogx(bode_freq, bode_mag, 'color', 'r'); 
-% axes(children(2))  % Phase Plot
-% semilogx(bode_freq, bode_phase, 'color', 'r')
+handle = figure;
+bode(tf_lvdt); hold on; grid on
+children = get(handle, 'Children');
+axes(children(3)) % Magnitude Plot
+semilogx(bode_freq, bode_mag, 'color', 'r'); 
+axes(children(2))  % Phase Plot
+semilogx(bode_freq, bode_phase, 'color', 'r')
 
 %% Functions 
 function zeta = find_damping_ratios(peaks, final_value)
