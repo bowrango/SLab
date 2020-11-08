@@ -1,13 +1,44 @@
+clear all; close all;
+
 %% 1. Potentiometer Accelerometer 
 
-% a.
- 
-% response1_dynamics = stepinfo(eo, t); 
-% overshoot1 = response1_dynamics.Overshoot
+% == Part a. ==
 
-% Get zeta based off overshoot plot on canvas
-% 
-% omega_n1 = find_undamped_natural_frequency(t, pk_idx1, zeta1)
+weights1 = ([10.9 60.9 110.9 160.9 200.9 215.9]/1000)*9.8 * 3.60; % N -> ozf
+e0_weights1 = [619.2 705.7 788 873.4 940.6 965.4]/1000; % mV -> V
+
+figure(1)
+plot(weights1, e0_weights1); grid on
+xlabel('Weight (oz_{f})'); ylabel('e_{0} (V)')
+
+% slope of the line (V/ozf)
+sensitivity = (e0_weights1(end) - e0_weights1(1)) / (weights1(end) - weights1(1));
+
+% == Part b. ==
+
+% the v2p5 folder contains functions to read .tdms files. Make sure to add
+% this folder and subfolders to your path when you clone the repo 
+filestruct1 = TDMS_readTDMSFile('JPL11.tdms');
+e01 = filestruct1.data{5};
+
+% time vector taken from the png plot
+t1 = linspace(-0.6, 0.6, length(e01));
+
+figure(2)
+plot(t1, e01); grid on
+
+% points taken from plot
+overshoot = abs(0.519 - 0.594) / 0.594;
+zeta1 = 0.56;
+
+% overshoot is about half of a full oscillation
+period1 = t1(54034) * 2;
+omega_damped1 = 2*pi/period1;
+
+% natural frequency 
+omega_undamped1 = omega_damped1 / sqrt(1 - zeta1^2);
+
+% this is kinda sketchy, not sure if it is correct.
 
 
 
@@ -16,29 +47,3 @@
 
 
 
-
-
-
-%% Functions
-
-function zeta = find_damping_ratios(peaks, final_value)
-    % Calculates the damping ratio between each peak using the log decrement method 
-    
-    amplitude = peaks - final_value;
-    delta = zeros(1, length(peaks)-1);
-    zeta = zeros(1, length(peaks)-1);
-    
-    for n = 1:length(peaks)-1
-        delta(n) = (1/n)*log(amplitude(n) / amplitude(n+1));
-        zeta(n) = delta(n) / sqrt( (4*(pi^2)) + delta(n)^2 );
-    end
-end
-
-function [omega_undamped, omega_damped] = find_undamped_natural_frequency(time, peak_indices, zeta)
-
-    wave_length = time(peak_indices(end)) - time(peak_indices(1));
-    period = wave_length / (length(peak_indices) - 1);
-    omega_damped = 2*pi/period;
-    
-    omega_undamped = omega_damped / sqrt(1 - zeta^2);
-end
