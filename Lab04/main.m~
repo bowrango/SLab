@@ -81,74 +81,26 @@ t = 14.25; %seconds - Taken from the plot above
 % == Part c. ==
 
 PCB_sys = readmatrix('JPL2.14.csv')';
-PCB_sys_t = PCB_sys(2,5:end); %s
-PCB_sys_v = PCB_sys(1,5:end); %mv
+PCB_sys_t = PCB_sys(2,40000:end); %s
+PCB_sys_v = PCB_sys(1,40000:end); %mv
 
-[peak_idx, peak_mag] = peakfinder(PCB_sys_v, 0.01);
-peak_idx = peak_idx(16:28);
-peak_mag = peak_mag(16:28);
+[peak_idx, peak_mag] = peakfinder(PCB_sys_v, 0.04);
 zeta = mean(find_damping_ratios(peak_mag, 0));
 [omega_undamped, omega_damped] = find_undamped_natural_frequency(PCB_sys_t, peak_idx, zeta);
-
-% figure(4)
-% plot(PCB_sys_t, PCB_sys_v); hold on
-% plot(PCB_sys_t(peak_idx), peak_mag, 'o'); 
 
 %2.2 Impulse Loading and Vibration
 
 % == Part a. ==
 
-foam = readmatrix('JPL2.2.csv')';
-foam_t = foam(2,40000:end); %s
-foam_v = foam(1,40000:end); %mv
 
-[peak_idx1, peak_mag1] = peakfinder(foam_v, 0.01);
-%peak_idx = peak_idx(16:28);
-%peak_mag = peak_mag(16:28);
-zeta1 = mean(find_damping_ratios(peak_mag1, 0));
-[omega_undamped2, omega_damped2] = find_undamped_natural_frequency(foam_t, peak_idx1, zeta1);
-
-mass1 = 2 * 32.174; %lbm
-
-figure(4)
-plot(foam_t, foam_v); hold on
-plot(foam_t(peak_idx1), peak_mag1, 'o');
-
-k = omega_undamped2^2 * mass1 * (1 / 32.174) * (1 / 12); % [lbf/in.]
 
 % == Part b. ==
 
-B = 2 * zeta1 * omega_undamped2 * mass * (1 / 32.174) * (1 / 12); % [lbf-s/in.]
+
 
 % == Part c. ==
 
-first = 1 / (omega_undamped2^2);
-second = 2 * zeta1 / omega_undamped2;
-third = 1;
-top = 1/k;
 
 
 
 
-%% Functions 
-function zeta = find_damping_ratios(peaks, final_value)
-    % Calculates the damping ratio between each peak using the log decrement method 
-    
-    amplitude = peaks - final_value;
-    delta = zeros(1, length(peaks)-1);
-    zeta = zeros(1, length(peaks)-1);
-    
-    for n = 1:length(peaks)-1
-        delta(n) = (1/n)*log(amplitude(n) / amplitude(n+1));
-        zeta(n) = delta(n) / sqrt( (4*(pi^2)) + delta(n)^2 );
-    end
-end
-
-function [omega_undamped, omega_damped] = find_undamped_natural_frequency(time, peak_indices, zeta)
-
-    wave_length = time(peak_indices(end)) - time(peak_indices(1));
-    period = wave_length / (length(peak_indices) - 1);
-    omega_damped = 2*pi/period;
-    
-    omega_undamped = omega_damped / sqrt(1 - zeta^2);
-end
