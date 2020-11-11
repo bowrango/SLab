@@ -99,8 +99,8 @@ zeta = mean(find_damping_ratios(peak_mag, 0));
 % == Part a. ==
 
 foam = readmatrix('JPL2.2.csv')';
-foam_t = foam(2,40000:end); %s
-foam_v = foam(1,40000:end); %mv
+foam_t = foam(2,49000:end) - foam(2,49000); %s
+foam_v = foam(1,49000:end); %mv
 
 [peak_idx1, peak_mag1] = peakfinder(foam_v, 0.01);
 %peak_idx = peak_idx(16:28);
@@ -112,13 +112,16 @@ mass1 = 2 * 32.174; %lbm
 
 figure(4)
 plot(foam_t, foam_v); hold on
-plot(foam_t(peak_idx1), peak_mag1, 'o');
+%plot(out.tout, out.simout)
+%legend('Experimental', 'Theoretical')
+title('System Response of Impulse Force')
 
-k = omega_undamped2^2 * mass1 * (1 / 32.174) * (1 / 12); % [lbf/in.]
+
+k = (omega_undamped2/(2*pi))^2 * mass1 * (1 / 32.174) * (1 / 12); % [lbf/in.]
 
 % == Part b. ==
 
-B = 2 * zeta1 * omega_undamped2 * mass * (1 / 32.174) * (1 / 12); % [lbf-s/in.]
+B = 2 * zeta1 * omega_undamped2 * mass1 * (1 / 32.174) * (1 / 12); % [lbf-s/in.]
 
 % == Part c. ==
 
@@ -126,8 +129,6 @@ first = 1 / (omega_undamped2^2);
 second = 2 * zeta1 / omega_undamped2;
 third = 1;
 top = 1/k;
-
-
 
 
 %% Functions 
