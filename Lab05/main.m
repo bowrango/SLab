@@ -32,8 +32,14 @@ start_torque = Kt * start_cur; % ozf-in
 
 % == Part A ==
 
+% Find the transfer function Eo/Ei of Figure 4, ignore the power op-amp
 
 % == Part B ==
+
+stall_cur = 6.0/5.0; % A
+stall_torque = Kt * stall_cur; % ozf-in
+
+% == Part C ==
 filestruct1 = TDMS_readTDMSFile('3.9Waveform.tdms');
 mut_eo = filestruct1.data{5};
 t = linspace(-0.600, 0.600, length(mut_eo));
